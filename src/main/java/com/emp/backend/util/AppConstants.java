@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class AppConstants {
-    public static final String SUCCESS_MSG = "Success";
-    public static final String FAILED_MSG = "Failed";
+    public static final String SUCCESS_MSG = "SUCCESS";
+    public static final String FAILED_MSG = "FAILED";
 }

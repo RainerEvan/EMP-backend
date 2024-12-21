@@ -25,6 +25,7 @@ public class Employee {
     public BigDecimal baseSalary;
     public String bankAccount;
     public String bankAccountNum;
+    public String profileImage;
     public String createdAt;
     public String createdBy;
     public String updatedAt;

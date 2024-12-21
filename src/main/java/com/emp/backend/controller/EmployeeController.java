@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.emp.backend.mapper.response.ResponseSchema;
 import com.emp.backend.model.Employee;
@@ -55,6 +57,16 @@ public class EmployeeController {
     public ResponseEntity<ResponseSchema<Void>> updateEmployee(@PathVariable String employeeId, @RequestBody Employee employee) {
         employee.setEmployeeId(employeeId);
         ResponseSchema<Void> response = employeeService.updateEmployee(employee);
+        if (response.getMessage().equals(AppConstants.SUCCESS_MSG)) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/profile-image/{employeeId}")
+    public ResponseEntity<ResponseSchema<Void>> editAccount(@RequestPart(name = "image", required = true) MultipartFile image, @PathVariable String employeeId){
+        ResponseSchema<Void> response = employeeService.updateEmployeeProfileImage(image, employeeId);
         if (response.getMessage().equals(AppConstants.SUCCESS_MSG)) {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {

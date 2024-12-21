@@ -42,8 +42,18 @@ public class PaycheckController {
     }
 
     @GetMapping("/report/{id}")
-    public ResponseEntity<ResponseSchema<Paycheck>> getPaycheckReport(@PathVariable String id) {
-        ResponseSchema<Paycheck> response = paycheckService.getPaycheckReport(id);
+    public ResponseEntity<ResponseSchema<String>> getPaycheckReport(@PathVariable String id) {
+        ResponseSchema<String> response = paycheckService.getPaycheckReport(id);
+        if (response.getOutput() != null) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/send-email/{id}")
+    public ResponseEntity<ResponseSchema<String>> sendPaycheckEmail(@PathVariable String id) {
+        ResponseSchema<String> response = paycheckService.sendPaycheckEmail(id);
         if (response.getOutput() != null) {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {

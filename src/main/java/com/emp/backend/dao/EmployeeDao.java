@@ -34,6 +34,7 @@ public class EmployeeDao {
             employee.setBaseSalary(rs.getBigDecimal("base_salary"));
             employee.setBankAccount(rs.getString("bank_account"));
             employee.setBankAccountNum(rs.getString("bank_account_num"));
+            employee.setProfileImage(rs.getString("profile_image"));
             employee.setCreatedAt(rs.getString("created_at"));
             employee.setCreatedBy(rs.getString("created_by"));
             employee.setUpdatedAt(rs.getString("updated_at"));
@@ -46,7 +47,7 @@ public class EmployeeDao {
     public List<Employee> getAllEmployees() {
         String sql = "SELECT id, full_name, birth_place, birth_date, phone_number, email, nik, employee_id, " +
                      "position, department, date_start, date_end, base_salary, bank_account, bank_account_num, " +
-                     "created_at, created_by, updated_at, updated_by, is_active " +
+                     "created_at, created_by, updated_at, updated_by, null as profile_image, is_active " +
                      "FROM employee ORDER BY employee_id";
         return jdbcTemplate.query(sql, employeeRowMapper);
     }
@@ -54,7 +55,7 @@ public class EmployeeDao {
     public Employee getEmployeeByEmployeeId(String employeeId) {
         String sql = "SELECT id, full_name, birth_place, birth_date, phone_number, email, nik, employee_id, " +
                      "position, department, date_start, date_end, base_salary, bank_account, bank_account_num, " +
-                     "created_at, created_by, updated_at, updated_by, is_active " +
+                     "profile_image, created_at, created_by, updated_at, updated_by, is_active " +
                      "FROM employee WHERE employee_id = ?";
         return jdbcTemplate.queryForObject(sql, employeeRowMapper, employeeId);
     }
@@ -88,6 +89,11 @@ public class EmployeeDao {
                             employee.getPosition(), employee.getDepartment(), employee.getDateStart(), employee.getDateEnd(),
                             employee.getBaseSalary(), employee.getBankAccount(), employee.getBankAccountNum(), employee.getUpdatedBy(),
                             employee.getIsActive(), employee.getEmployeeId());
+    }
+
+    public void updateEmployeeProfileImage(String profileImage, String employeeId) {
+        String sql = "UPDATE employee SET profile_image = ? WHERE employee_id = ? ";
+        jdbcTemplate.update(sql, profileImage, employeeId);
     }
     
     public void deleteEmployee(String id) {

@@ -35,6 +35,8 @@ public class PaycheckDao {
             paycheck.setTotalDeduction(rs.getBigDecimal("total_deduction"));
             paycheck.setTotalNetIncome(rs.getBigDecimal("total_net_income"));
             paycheck.setFileName(rs.getString("file_name"));
+            paycheck.setBankAccount(rs.getString("bank_account"));
+            paycheck.setBankAccountNum(rs.getString("bank_account_num"));
             paycheck.setDateLastSent(rs.getString("date_last_sent"));
             paycheck.setCountSent(rs.getBigDecimal("count_sent"));
             paycheck.setCreatedAt(rs.getString("created_at"));
@@ -48,15 +50,15 @@ public class PaycheckDao {
     public List<Paycheck> getAllPaychecksByEmployeeId(String employeeId) {
         String sql = "SELECT id, employee_id, base_salary, transportation_allowance, food_allowance, overtime, " +
                      "total_gross_income, bpjs_kesehatan, bpjs_ketenagakerjaan, tax, other_cut, total_deduction, " +
-                     "total_net_income, file_name, date_last_sent, count_sent, created_at, created_by, updated_at, updated_by " +
-                     "FROM paycheck WHERE employee_id = ?";
+                     "total_net_income, file_name, bank_account, bank_account_num, date_last_sent, count_sent, created_at, created_by, updated_at, updated_by " +
+                     "FROM paycheck WHERE employee_id = ? order by created_at desc";
         return jdbcTemplate.query(sql, paycheckRowMapper, employeeId);
     }
 
     public Paycheck getPaycheckById(String id) {
         String sql = "SELECT id, employee_id, base_salary, transportation_allowance, food_allowance, overtime, " +
                      "total_gross_income, bpjs_kesehatan, bpjs_ketenagakerjaan, tax, other_cut, total_deduction, " +
-                     "total_net_income, file_name, date_last_sent, count_sent, created_at, created_by, updated_at, updated_by " +
+                     "total_net_income, file_name, bank_account, bank_account_num, date_last_sent, count_sent, created_at, created_by, updated_at, updated_by " +
                      "FROM paycheck WHERE id = CAST(? AS UUID)";
         return jdbcTemplate.queryForObject(sql, paycheckRowMapper, id);
     }
@@ -64,27 +66,33 @@ public class PaycheckDao {
     public void insertPaycheck(Paycheck paycheck) {
         String sql = "INSERT INTO paycheck (employee_id, base_salary, transportation_allowance, food_allowance, overtime, " +
                      "total_gross_income, bpjs_kesehatan, bpjs_ketenagakerjaan, tax, other_cut, total_deduction, " +
-                     "total_net_income, file_name, date_last_sent, count_sent, created_at, created_by, updated_at, updated_by) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, ?, ?)";
+                     "total_net_income, file_name, bank_account, bank_account_num, date_last_sent, count_sent, created_at, created_by, updated_at, updated_by) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, ?, ?)";
         jdbcTemplate.update(sql, paycheck.getEmployeeId(), paycheck.getBaseSalary(),
                             paycheck.getTransportationAllowance(), paycheck.getFoodAllowance(), paycheck.getOvertime(),
                             paycheck.getTotalGrossIncome(), paycheck.getBpjsKesehatan(), paycheck.getBpjsKetenagakerjaan(),
                             paycheck.getTax(), paycheck.getOtherCut(), paycheck.getTotalDeduction(), paycheck.getTotalNetIncome(),
-                            paycheck.getFileName(), paycheck.getDateLastSent(), paycheck.getCountSent(),
+                            paycheck.getFileName(), paycheck.getBankAccount(), paycheck.getBankAccountNum(), paycheck.getDateLastSent(), paycheck.getCountSent(),
                             paycheck.getCreatedBy(), paycheck.getUpdatedAt(), paycheck.getUpdatedBy());
     }
 
     public void updatePaycheck(Paycheck paycheck) {
         String sql = "UPDATE paycheck SET employee_id = ?, base_salary = ?, transportation_allowance = ?, food_allowance = ?, " +
                      "overtime = ?, total_gross_income = ?, bpjs_kesehatan = ?, bpjs_ketenagakerjaan = ?, tax = ?, other_cut = ?, " +
-                     "total_deduction = ?, total_net_income = ?, file_name = ?, date_last_sent = ?, " +
+                     "total_deduction = ?, total_net_income = ?, file_name = ?, bank_account = ?, bank_account_num = ?, date_last_sent = ?, " +
                      "count_sent = ?, updated_by = ? WHERE id = CAST(? AS UUID)";
         jdbcTemplate.update(sql, paycheck.getEmployeeId(), paycheck.getBaseSalary(), paycheck.getTransportationAllowance(),
                             paycheck.getFoodAllowance(), paycheck.getOvertime(), paycheck.getTotalGrossIncome(),
                             paycheck.getBpjsKesehatan(), paycheck.getBpjsKetenagakerjaan(), paycheck.getTax(),
                             paycheck.getOtherCut(), paycheck.getTotalDeduction(), paycheck.getTotalNetIncome(),
-                            paycheck.getFileName(), paycheck.getDateLastSent(), paycheck.getCountSent(),
+                            paycheck.getFileName(), paycheck.getBankAccount(), paycheck.getBankAccountNum(), paycheck.getDateLastSent(), paycheck.getCountSent(),
                             paycheck.getUpdatedBy(), paycheck.getId());
+    }
+
+    public void updatePaycheckEmailSent(Paycheck paycheck) {
+        String sql = "UPDATE paycheck SET count_sent = ?, date_last_sent = now() " +
+                     "WHERE id = CAST(? AS UUID)";
+        jdbcTemplate.update(sql, paycheck.getCountSent(), paycheck.getId());
     }
 
     public void deletePaycheck(String id) {

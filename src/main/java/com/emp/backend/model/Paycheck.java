@@ -25,6 +25,8 @@ public class Paycheck {
     public BigDecimal totalNetIncome;
     public String fileName;
     public String fileBase64;
+    public String bankAccount;
+    public String bankAccountNum;
     public String dateLastSent;
     public BigDecimal countSent;
     public String createdAt;

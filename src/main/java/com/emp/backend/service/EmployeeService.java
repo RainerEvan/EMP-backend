@@ -1,16 +1,20 @@
 package com.emp.backend.service;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.emp.backend.dao.EmployeeDao;
 import com.emp.backend.mapper.response.ResponseSchema;
 import com.emp.backend.model.Employee;
 import com.emp.backend.util.AppConstants;
+import com.emp.backend.util.ImageUtils;
 
 @Service
 public class EmployeeService {
@@ -81,6 +85,21 @@ public class EmployeeService {
         return response;
     }
 
+    public ResponseSchema<Void> updateEmployeeProfileImage(MultipartFile file, String employeeId) {
+        ResponseSchema<Void> response = new ResponseSchema<>();
+
+        try {
+            String image = encodeImage(file);
+            employeeDao.updateEmployeeProfileImage(image, employeeId);
+            response.setMessage(AppConstants.SUCCESS_MSG);
+        } catch (Exception e) {
+            response.setMessage(AppConstants.FAILED_MSG);
+            log.error("Failed to update employee: {}", e.getMessage(), e);
+        }
+
+        return response;
+    }
+
     public ResponseSchema<Void> deleteEmployee(String id) {
         ResponseSchema<Void> response = new ResponseSchema<>();
 
@@ -107,4 +126,18 @@ public class EmployeeService {
         return String.format("EMP%05d", newNum);
     }
 
+    public String encodeImage(MultipartFile file){
+        try{
+            byte[] image = new byte[0];
+            
+            image = ImageUtils.cropImageSquare(file);
+
+            String encodedString = Base64.getEncoder().encodeToString(image);
+
+            return encodedString;
+            
+        } catch (IOException exception){
+            throw new IllegalStateException("Could not add the current file", exception);
+        }
+    }
 }

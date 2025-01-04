@@ -1,6 +1,7 @@
 package com.emp.backend.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -41,20 +42,24 @@ public class UserDao {
     public User getUserByUsername(String username) {
         String sql = "SELECT username, password, role FROM public.user WHERE username = ?";
         
-        return jdbcTemplate.queryForObject(
-            sql,
-            new RowMapper<User>() {
-                @Override
-                public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    User user = new User();
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRole(rs.getString("role"));
-                    return user;
-                }
-            },
-            new Object[]{username}
-        );
+       try {
+            return jdbcTemplate.queryForObject(
+                sql,
+                new RowMapper<User>() {
+                    @Override
+                    public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        User user = new User();
+                        user.setUsername(rs.getString("username"));
+                        user.setPassword(rs.getString("password"));
+                        user.setRole(rs.getString("role"));
+                        return user;
+                    }
+                },
+                username
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public int insertUser(UserRequest userRequest){

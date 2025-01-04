@@ -3,11 +3,14 @@ package com.emp.backend.security.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.security.Key;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Component
@@ -19,38 +22,50 @@ public class JwtTokenUtil {
     @Value("${jwt.jwtExpirationMs}")
     private long JWT_EXPIRATION;   
 
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
+    }
+
     // Generate token
     public String generateToken(String username) {
+        Instant now = Instant.now();
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime() + JWT_EXPIRATION))
-                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plus(JWT_EXPIRATION, ChronoUnit.MILLIS)))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    // Validate token
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
+            // Log the error for debugging purposes
+            System.err.println("Invalid JWT Token: " + e.getMessage());
             return false;
         }
     }
 
-    // Extract username from token
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
         return claims.getSubject();
     }
 
-    // Extract token from request header
-    public String extractToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);  // Remove "Bearer " prefix
-        }
-        return null;
+    public Date getExpirationDateFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                            .setSigningKey(getSigningKey())
+                            .build()
+                            .parseClaimsJws(token)
+                            .getBody();
+        return claims.getExpiration();
     }
 }

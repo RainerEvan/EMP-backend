@@ -32,7 +32,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(now.plus(JWT_EXPIRATION, ChronoUnit.MILLIS)))
+                .setExpiration(Date.from(now.plusMillis(JWT_EXPIRATION)))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -45,7 +45,6 @@ public class JwtTokenUtil {
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            // Log the error for debugging purposes
             System.err.println("Invalid JWT Token: " + e.getMessage());
             return false;
         }
